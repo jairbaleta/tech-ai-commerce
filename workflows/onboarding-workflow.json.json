@@ -1,0 +1,1629 @@
+{
+  "name": "Automation 2",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.records[0].fields.plan }}",
+                    "rightValue": "=starter",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "242681d7-e3a1-4ce2-b955-e21a2850d71a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "33be8c5e-bc45-43df-9578-2f129c8a4a76",
+                    "leftValue": "={{ $json.records[0].fields.plan }}",
+                    "rightValue": "=growth",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a3a29ba0-af98-4d04-90a1-57a513bf2177",
+                    "leftValue": "={{ $json.records[0].fields.plan }}",
+                    "rightValue": "premium",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        192
+      ],
+      "id": "cc7024b5-02e0-49d4-8bd8-65baf9cc2133",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tally-starter",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        176
+      ],
+      "id": "0ea18c2a-d6ef-47ee-97ac-5a4e8ab28691",
+      "name": "Starter",
+      "webhookId": "f4daa9f4-3de6-40e9-8e38-513ff01dafe0"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tally-growth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        368
+      ],
+      "id": "265e1b7b-f3e3-42cf-bf21-1868f3a5b5c8",
+      "name": "Growth",
+      "webhookId": "f4daa9f4-3de6-40e9-8e38-513ff01dafe0"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tally-premium",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        560
+      ],
+      "id": "cf149c79-1d0a-4020-a464-d819f0646600",
+      "name": "Premium",
+      "webhookId": "f4daa9f4-3de6-40e9-8e38-513ff01dafe0"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== Detectar respuestas desde Tally =====\nconst answers =\n  $json.body?.answers ||\n  $json.body?.data?.fields ||\n  [];\n\n// ===== Detectar PLAN según webhook =====\nlet plan = \"desconocido\";\nconst webhookUrl = $json.webhookUrl || \"\";\n\nif (webhookUrl.includes(\"starter\")) {\n  plan = \"starter\";\n}\nif (webhookUrl.includes(\"growth\")) {\n  plan = \"growth\";\n}\nif (webhookUrl.includes(\"premium\")) {\n  plan = \"premium\";\n}\n\n// ===== Objeto normalizado =====\nlet data = {\n  plan: plan\n};\n\n// ===== Recorrer preguntas =====\nfor (const a of answers) {\n\n  const label = a.label?.toLowerCase() || \"\";\n  const value = a.value;\n\n  if (label.includes(\"descripción breve\")) {\n    data.descripcion_negocio = value;\n  }\n\n  if (label.includes(\"tono\")) {\n    data.tono_marca = value;\n  }\n\n  if (label.includes(\"herramientas\")) {\n    data.herramientas = value;\n  }\n\n  if (label.includes(\"fechas\")) {\n    data.fecha_evento = value;\n  }\n\n  if (label.includes(\"métricas\")) {\n    data.metricas = value;\n  }\n\n  if (label.includes(\"procesos\")) {\n    data.procesos = value;\n  }\n\n  if (label.includes(\"integraciones\")) {\n    data.integraciones = value;\n  }\n\n  if (label.includes(\"presupuesto\")) {\n    data.presupuesto = value;\n  }\n\n  if (label.includes(\"roles\")) {\n    data.roles_equipo = value;\n  }\n\n  if (label.includes(\"requerimiento\")) {\n    data.requerimientos = value;\n  }\n\n  if (label.includes(\"documentación\")) {\n    data.documentacion = value;\n  }\n}\n\n// ===== Output final =====\nreturn [{ json: { ...$json, ...data } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        368
+      ],
+      "id": "b0986d04-d8b5-4c5e-b6a0-09a6c0012b2b",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/appjtgvEWHvMcWlqb/Clientes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <AIRTABLE_TOKEN>"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  records: [\n    {\n      fields: {\n        empresa: $json.body.data.fields.find(f => f.label.toLowerCase().includes('empresa'))?.value || \"\",\n        contacto: $json.body.data.fields.find(f => f.label.toLowerCase().includes('contacto'))?.value || \"\",\n        correo: $json.body.data.fields.find(f => f.label.toLowerCase().includes('correo'))?.value || \"\",\n        telefono: $json.body.data.fields.find(f => f.label.toLowerCase().includes('teléfono'))?.value || \"\",\n        sitio_web: $json.body.data.fields.find(f => f.label.toLowerCase().includes('sitio'))?.value || \"\",\n\n        plan: $json.plan,\n\n        estado_onboarding: \"brief recibido\",\n        descripcion_negocio: $json.descripcion_negocio || \"\",\n        tono_marca: $json.tono_marca || \"\",\n        herramientas: $json.herramientas || \"\",\n        metricas: $json.metricas || \"\",\n        procesos: $json.procesos || \"\",\n        integraciones: $json.integraciones || \"\",\n        presupuesto: $json.presupuesto ? Number($json.presupuesto) : 0,\n        roles_equipo: $json.roles_equipo || \"\",\n        requerimientos: $json.requerimientos || \"\",\n        documentacion: $json.documentacion || \"\"\n      }\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        368
+      ],
+      "id": "cf07beff-703c-41a5-b4f6-5ba229eb3766",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "content": "ID Node HTTP - recQZfK3W7yaJLnlE"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        272
+      ],
+      "typeVersion": 1,
+      "id": "5d33d68d-2ed1-403c-9275-2c022a21b62b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8f4bd090-019c-496b-b4f4-cbe27b37ad8a",
+              "name": "cliente_id",
+              "value": "={{$json.records[0].id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        208
+      ],
+      "id": "32c7c51f-d631-4abf-8035-b55c3208dca0",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "team": "90132918033",
+        "space": "901312641282",
+        "folder": "901316181369",
+        "list": "901324106133",
+        "name": "={{$json.records?.[0]?.fields?.empresa || $json.records?.[0]?.fields?.cliente_relacionado}}",
+        "additionalFields": {
+          "customFieldsJson": "="
+        }
+      },
+      "type": "n8n-nodes-base.clickUp",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        400
+      ],
+      "id": "f0fc9401-5bb5-4000-8a3d-4c723f3cebb8",
+      "name": "Create a task",
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/appjtgvEWHvMcWlqb/Clientes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <AIRTABLE_TOKEN>"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  records: [\n    {\n      fields: {\n        cliente_relacionado: $json.cliente_id,\n        plan: $json.records[0].fields.plan,\n        estado_onboarding: \"Inicio Starter\"\n      }\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        16
+      ],
+      "id": "5c59c7bf-ad26-43e4-9669-129db229edac",
+      "name": "HTTP Starter",
+      "alwaysOutputData": false,
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/appjtgvEWHvMcWlqb/Clientes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <AIRTABLE_TOKEN>"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  records: [\n    {\n      fields: {\n        cliente_relacionado: $json.cliente_id,\n        plan: $json.records[0].fields.plan,\n        estado_onboarding: \"Inicio Growth\"\n      }\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        208
+      ],
+      "id": "ef15cbc3-e35a-4b69-aebb-bf18000975fc",
+      "name": "HTTP Growth",
+      "alwaysOutputData": false,
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/appjtgvEWHvMcWlqb/Clientes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <AIRTABLE_TOKEN>"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  records: [\n    {\n      fields: {\n        cliente_relacionado: $json.cliente_id,\n        plan: $json.records[0].fields.plan,\n        estado_onboarding: \"Inicio Premium\"\n      }\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        400
+      ],
+      "id": "671794ed-7b67-481b-95fd-97b7597e41f5",
+      "name": "HTTP Premium",
+      "alwaysOutputData": false,
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "url": "https://api.clickup.com/api/v2/team",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1712,
+        992
+      ],
+      "id": "0c1e3b5b-17af-4fad-979a-104f5e4bf5c3",
+      "name": "HTTP Request1",
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1856,
+        304
+      ],
+      "id": "0cc4294b-7af8-49cb-a347-de2e5595046c",
+      "name": "Merge_TaskID"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1344,
+        336
+      ],
+      "id": "add49c8f-a3a8-4704-8699-4249e9e61288",
+      "name": "Growth1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1344,
+        576
+      ],
+      "id": "5776094b-bb24-4d14-b7ae-106a73965bf9",
+      "name": "Premium1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1344,
+        -64
+      ],
+      "id": "c395ffde-7002-4100-9163-6ec43267f2f2",
+      "name": "Starter1"
+    },
+    {
+      "parameters": {
+        "team": "90132918033",
+        "space": "901312641282",
+        "folder": "901316181369",
+        "list": "901324106133",
+        "name": "={{$json.records?.[0]?.fields?.empresa || $json.records?.[0]?.fields?.cliente_relacionado}}",
+        "additionalFields": {
+          "customFieldsJson": "="
+        }
+      },
+      "type": "n8n-nodes-base.clickUp",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        -64
+      ],
+      "id": "d41edaf0-fcef-4543-a7dd-035e13b2e84f",
+      "name": "Create a task1",
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "team": "90132918033",
+        "space": "901312641282",
+        "folder": "901316181369",
+        "list": "901324106133",
+        "name": "={{$json.records?.[0]?.fields?.empresa || $json.records?.[0]?.fields?.cliente_relacionado}}",
+        "additionalFields": {
+          "customFieldsJson": "="
+        }
+      },
+      "type": "n8n-nodes-base.clickUp",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        672
+      ],
+      "id": "a5eca65c-9c98-485c-b5a9-c16b71c7c2e0",
+      "name": "Create a task2",
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Validar y aprobar el brief completo\",\n  \"parent\": \"{{$node['Create a task'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2064,
+        304
+      ],
+      "id": "e61ab0c2-673e-4872-a76f-57bf6548a124",
+      "name": "HTTP Growth1",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Configurar cliente en Airtable con campos completos\",\n  \"parent\": \"{{$node['Create a task'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        304
+      ],
+      "id": "f59156fe-aa3e-4d8c-8c14-8247799c97ed",
+      "name": "HTTP Growth2",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Notificar al equipo interno en Slack\",\n  \"parent\": \"{{$node['Create a task'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2416,
+        304
+      ],
+      "id": "eb204011-8a88-4ce3-a3f2-70d933a89e92",
+      "name": "HTTP Growth3",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Crear carpeta compartida del cliente (Drive / Notion)\",\n  \"parent\": \"{{$node['Create a task'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2592,
+        304
+      ],
+      "id": "d5b005a7-b308-45b7-b306-46c998b45bb8",
+      "name": "HTTP Growth4",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Configurar accesos a plataformas publicitarias y analíticas\",\n  \"parent\": \"{{$node['Create a task'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2768,
+        304
+      ],
+      "id": "9e1e16ff-87b1-410e-835b-154e3054297e",
+      "name": "HTTP Growth5",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AFY5UAYTG",
+          "mode": "list",
+          "cachedResultName": "nuevo-canal"
+        },
+        "text": "=🚀 Nuevo cliente onboarding iniciado\n\n🏢 Cliente: {{$node[\"Merge_TaskID\"].json.records[0].fields.empresa}}\n📋 Plan: {{$node[\"Merge_TaskID\"].json.records[0].fields.plan}}\n👤 Contacto: {{$node[\"Merge_TaskID\"].json.records[0].fields.contacto}}\n📧 Correo: {{$node[\"Merge_TaskID\"].json.records[0].fields.correo}}\n\n✅ Tarea creada automáticamente en ClickUp\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        2976,
+        304
+      ],
+      "id": "0fa4f69b-b04f-435a-8307-23510d5606db",
+      "name": "Send a message",
+      "webhookId": "0f2e3788-64c3-4122-9a0a-4f5f5a977190",
+      "credentials": {
+        "slackApi": {
+          "id": "6uvFOcmvIODknODi",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1856,
+        64
+      ],
+      "id": "05e8bcba-9f80-4c47-a254-296030da0931",
+      "name": "Merge_TaskID1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Confirmar recepción del brief y validar datos en Airtable\",\n  \"parent\": \"{{$node['Create a task1'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2064,
+        64
+      ],
+      "id": "5cdfd375-cb6e-48ab-8b57-6191000c890d",
+      "name": "HTTP Growth6",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Crear carpeta del cliente en Google Drive y compartir con el equipo\",\n  \"parent\": \"{{$node['Create a task1'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        64
+      ],
+      "id": "a5526895-c1e4-4ec7-8ca1-c4ff268a357e",
+      "name": "HTTP Growth7",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Registrar cliente en Airtable\",\n  \"parent\": \"{{$node['Create a task1'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2416,
+        64
+      ],
+      "id": "327be122-550c-4abb-bfcc-a0da31e59567",
+      "name": "HTTP Growth8",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AFY5UAYTG",
+          "mode": "list",
+          "cachedResultName": "nuevo-canal"
+        },
+        "text": "=🚀 Nuevo cliente onboarding iniciado\n\n🏢 Cliente: {{$node[\"Merge_TaskID1\"].json.records[0].fields.empresa}}\n📋 Plan: {{$node[\"Merge_TaskID1\"].json.records[0].fields.plan}}\n👤 Contacto: {{$node[\"Merge_TaskID1\"].json.records[0].fields.contacto}}\n📧 Correo: {{$node[\"Merge_TaskID1\"].json.records[0].fields.correo}}\n\n✅ Tarea creada automáticamente en ClickUp\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        2592,
+        64
+      ],
+      "id": "f1a891b5-adf4-44d0-baef-9f58dd9c1d10",
+      "name": "Send a message1",
+      "webhookId": "0f2e3788-64c3-4122-9a0a-4f5f5a977190",
+      "credentials": {
+        "slackApi": {
+          "id": "6uvFOcmvIODknODi",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1856,
+        544
+      ],
+      "id": "41673f84-3a43-492f-b341-9fe2bb6e5c2e",
+      "name": "Merge_TaskID2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Validar brief estratégico y definir KPIs principales\",\n  \"parent\": \"{{$node['Create a task2'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2064,
+        544
+      ],
+      "id": "d91a04a5-fc53-42e8-af81-c4abbd454716",
+      "name": "HTTP Growth9",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Revisar accesos y permisos (CRM, Ads, Analytics)\",\n  \"parent\": \"{{$node['Create a task2'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        544
+      ],
+      "id": "7ee7da49-6050-470e-bb45-c2c6f154c22d",
+      "name": "HTTP Growth10",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Configurar registro en Airtable vía automatización\",\n  \"parent\": \"{{$node['Create a task2'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2416,
+        544
+      ],
+      "id": "3101485f-8d46-49eb-aa98-cacc0419341f",
+      "name": "HTTP Growth11",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Crear tablero en ClickUp con subtareas por área (Paid, Orgánico, Diseño, Data)\",\n  \"parent\": \"{{$node['Create a task2'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2592,
+        544
+      ],
+      "id": "36bce969-bc6c-426d-b8d3-df0af7935114",
+      "name": "HTTP Growth12",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Notificar en Slack a todos los equipos involucrados\",\n  \"parent\": \"{{$node['Create a task2'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2768,
+        544
+      ],
+      "id": "877d6345-642d-4415-b558-18aa9ee622d2",
+      "name": "HTTP Growth13",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AFY5UAYTG",
+          "mode": "list",
+          "cachedResultName": "nuevo-canal"
+        },
+        "text": "=🚀 Nuevo cliente onboarding iniciado\n\n🏢 Cliente: {{$node[\"Merge_TaskID2\"].json.records[0].fields.empresa}}\n📋 Plan: {{$node[\"Merge_TaskID2\"].json.records[0].fields.plan}}\n👤 Contacto: {{$node[\"Merge_TaskID2\"].json.records[0].fields.contacto}}\n📧 Correo: {{$node[\"Merge_TaskID2\"].json.records[0].fields.correo}}\n\n✅ Tarea creada automáticamente en ClickUp\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        3472,
+        544
+      ],
+      "id": "50a21078-89f6-4462-9b12-2aed1bc33782",
+      "name": "Send a message2",
+      "webhookId": "0f2e3788-64c3-4122-9a0a-4f5f5a977190",
+      "credentials": {
+        "slackApi": {
+          "id": "6uvFOcmvIODknODi",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Crear dashboard de seguimiento (Data Studio / Looker)\",\n  \"parent\": \"{{$node['Create a task2'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2944,
+        544
+      ],
+      "id": "c3838297-47d1-4c83-82a4-d823fbd84de0",
+      "name": "HTTP Growth14",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Documentar procesos y accesos en carpeta Drive\",\n  \"parent\": \"{{$node['Create a task2'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3120,
+        544
+      ],
+      "id": "97d275af-ea2f-483d-a609-04e8db966a41",
+      "name": "HTTP Growth15",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clickup.com/api/v2/list/901324106133/task",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Programar sesión de traspaso con cliente y equipo\",\n  \"parent\": \"{{$node['Create a task2'].json.id}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3296,
+        544
+      ],
+      "id": "cee75638-7b1c-4f30-916d-3e8818d68d4c",
+      "name": "HTTP Growth16",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "Uguh52OjXU7emejb",
+          "name": "ClickUp account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Starter": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Growth": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Premium": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Growth1",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Starter1",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Premium1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "HTTP Starter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Growth",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Premium",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Starter": {
+      "main": [
+        [
+          {
+            "node": "Starter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth": {
+      "main": [
+        [
+          {
+            "node": "Growth1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Premium": {
+      "main": [
+        [
+          {
+            "node": "Premium1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a task": {
+      "main": [
+        [
+          {
+            "node": "Merge_TaskID",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Growth1": {
+      "main": [
+        [
+          {
+            "node": "Create a task",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge_TaskID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Starter1": {
+      "main": [
+        [
+          {
+            "node": "Create a task1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge_TaskID1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Premium1": {
+      "main": [
+        [
+          {
+            "node": "Create a task2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge_TaskID2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge_TaskID": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth5": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge_TaskID1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth8": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge_TaskID2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth9": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth10": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth11": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth12": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth13": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth14": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth15": {
+      "main": [
+        [
+          {
+            "node": "HTTP Growth16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Growth16": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a task1": {
+      "main": [
+        [
+          {
+            "node": "Merge_TaskID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a task2": {
+      "main": [
+        [
+          {
+            "node": "Merge_TaskID2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "526ede7c-c7ad-4e76-842b-2b5725a778bb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "53a6dc50675b87aed68ae47af8ee34303ff24b1b4b44d6d7f0b644de3efa0f2d"
+  },
+  "id": "EQSlD7Ytr2hsVXWI",
+  "tags": []
+}
