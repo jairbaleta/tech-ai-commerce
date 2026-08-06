@@ -17,3 +17,32 @@ El flujo automatiza la recepción de la información del cliente, identifica el 
 - Notificaciones automáticas al equipo mediante Slack.
 - Transformación y validación de datos con JavaScript.
 - Arquitectura basada en Webhooks para la automatización del proceso.
+
+## 🛠️ Tecnologías utilizadas
+
+- n8n
+- Airtable
+- ClickUp
+- Slack
+- JavaScript
+- Webhooks
+
+## 🏗️ Arquitectura del proceso
+
+![Arquitectura del sistema](images/onboarding-diagram.png.png)
+
+## 📂 Estructura del proyecto
+
+```text
+tech-ai-commerce/
+├── images/
+├── workflows/
+├── docs/
+└── README.md
+```
+
+## 👨‍💻 Autor
+
+**Jair Baleta**
+
+AI Automation Engineer
