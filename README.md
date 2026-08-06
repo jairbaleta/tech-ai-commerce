@@ -89,6 +89,16 @@ Notificación automática en Slack
 
 ![Arquitectura](images/onboarding-diagram.png.png)
 
+### Flujo general
+
+1. El cliente completa el formulario de onboarding en Tally.
+2. Un Webhook en n8n recibe y procesa la información.
+3. Los datos son normalizados mediante JavaScript.
+4. El cliente se clasifica automáticamente según el plan contratado.
+5. La información se registra en Airtable.
+6. Se crean automáticamente las tareas correspondientes en ClickUp.
+7. El equipo recibe una notificación automática en Slack.
+8. El proceso queda listo para iniciar la ejecución del servicio.
 ---
 
 ## 📂 Estructura del repositorio
